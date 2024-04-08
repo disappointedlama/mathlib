@@ -17,10 +17,8 @@ class Matrix{
 public:
     static std::default_random_engine re;
     array<double,rows*cols>* data;
+    Matrix() : data{new array<double,rows*cols>{}}{}
     Matrix(array<double,rows*cols>* data) : data{data}{}
-    Matrix() : data{new array<double,rows*cols>{}}{
-        std::fill(data->begin(), data->end(), 0);
-    }
     Matrix(const Matrix& other) : data{new array<double,rows*cols>{*other.data}}{}
     Matrix(const array<double,rows*cols> data) : data{new array<double,rows*cols>{data}}{}
     constexpr Matrix& swapRows(const size_t i, const size_t j){
@@ -97,6 +95,11 @@ public:
             ret[i]=value;
         }
         return Vector<rows>{ret};
+    }
+    static Matrix getFilledWith(const double value){
+        Matrix ret{};
+        std::fill(ret.data->begin(), ret.data->end(), value);
+        return ret;
     }
     friend constexpr Matrix operator+(const Matrix& m1, const Matrix& m2){ return Matrix{m1}+=m2;}
     friend constexpr Matrix operator-(const Matrix& m1, const Matrix& m2){ return Matrix{m1}-=m2;}
@@ -275,6 +278,11 @@ public:
     }
     constexpr vector<Vector<size>> solve(vector<Vector<size>>& vectors){
 
+    }
+    static SquareMatrix getFilledWith(const double value){
+        SquareMatrix ret{};
+        std::fill(ret.data->begin(), ret.data->end(), value);
+        return ret;
     }
     static SquareMatrix identity(){
         SquareMatrix ret{};
