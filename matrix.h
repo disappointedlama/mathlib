@@ -96,7 +96,7 @@ public:
         }
         return Vector<rows>{ret};
     }
-    static Matrix getFilledWith(const double value){
+    static Matrix filledWith(const double value){
         Matrix ret{};
         std::fill(ret.data->begin(), ret.data->end(), value);
         return ret;
@@ -195,7 +195,7 @@ public:
     constexpr SquareMatrix& transposeInPlace(){   
         #pragma omp parallel for if(size*size>2000)
         for(int i=0;i<size;++i){
-            for(int j=0;j<size;++j){
+            for(int j=i;j<size;++j){
                 std::swap((*Matrix<size,size>::data)[j*size+i], (*Matrix<size,size>::data)[i*size+j]);
             }
         }
@@ -279,7 +279,7 @@ public:
     constexpr vector<Vector<size>> solve(vector<Vector<size>>& vectors){
 
     }
-    static SquareMatrix getFilledWith(const double value){
+    static SquareMatrix filledWith(const double value){
         SquareMatrix ret{};
         std::fill(ret.data->begin(), ret.data->end(), value);
         return ret;

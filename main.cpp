@@ -40,12 +40,19 @@ int main(){
    SquareMatrix<100> sqm3{SquareMatrix<100>::getRandom(-1,1)};
    Vector<100> tmp{Vector<100>::getRandom(-1,1)};
    cout<<sqm3.solve(tmp);
-    */
-   SquareMatrix<3000> benchmarkMatrix{SquareMatrix<3000>::getRandom(-1,1)};
+   SquareMatrix<4096> benchmarkMatrix{SquareMatrix<4096>::getRandom(-1,1)};
    double start=omp_get_wtime();
-   SquareMatrix<3000> tmp2{benchmarkMatrix*benchmarkMatrix};
+   SquareMatrix<4096> tmp2{benchmarkMatrix*benchmarkMatrix};
    double duration=omp_get_wtime()-start;
    cout<<"done after "<<duration<<"s"<<endl;
-   cout<<2.0*3000*3000*3000/duration<<" flops/s"<<endl;
+   cout<<2.0*4096*4096*4096/duration<<" flops/s"<<endl;
+   start=omp_get_wtime();
+   double det = benchmarkMatrix.determinantInPlace();
+   duration=omp_get_wtime()-start;
+   cout<<"determinant calculated after "<<duration<<"s"<<endl;
+    */
+   SquareMatrix<3> m{{1,2,3,0,5,6,7,8,9}};
+   vector<Vector<3>> v{{Vector<3>{{1,2,3}}}};
+   cout<<m.solve(v)[0]<<endl;
    return 0;
 }
