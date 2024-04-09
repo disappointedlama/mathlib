@@ -107,10 +107,10 @@ public:
     friend constexpr Matrix operator*(const double factor, const Matrix& m) { return m * factor; };
     constexpr double& operator[](size_t pos){ return (*data)[pos]; }
     friend constexpr bool operator==(const Matrix& m1, const Matrix& m2){
-        return *m1.data==*m2.data;
+        return !(m1!=m2);
     }
-    friend constexpr bool operator!=(const Matrix& m1, const Matrix& m2){ return !(m1==m2); }
-    friend constexpr Matrix<rows,rows> operator*(const Matrix<rows,cols>& m1, const Matrix<cols,rows>& m2) {
+    friend constexpr bool operator!=(const Matrix& m1, const Matrix& m2){ return *m1.data!=*m2.data; }
+    friend inline Matrix<rows,rows> operator*(const Matrix<rows,cols>& m1, const Matrix<cols,rows>& m2) {
         array<double, rows*rows>* ret{new array<double, rows*rows>{}};
         array<double, rows*cols>* tmp{new array<double, rows*cols>{}};
         array<double, rows*cols>& arr1{*m1.data};
@@ -124,12 +124,13 @@ public:
         }
         #pragma omp parallel for if(rows*cols>2000)
         for(int i=0;i<rows;++i){
-            const size_t offset{i*cols};
+            const size_t iOffset{i*cols};
             for(int j=0;j<rows;++j){
                 double entry{0};
+                const size_t jOffset{j*cols};
                 #pragma omp simd reduction(+:entry)
-                for(int k=offset;k<offset+cols;++k){
-                    entry+=arr1[k] * arr2[k];
+                for(int k=0;k<cols;++k){
+                    entry+=arr1[iOffset + k] * arr2[jOffset+k];
                 }
                 (*ret)[i*rows + j] = entry;
             }
@@ -277,7 +278,63 @@ public:
         return ret;
     }
     constexpr vector<Vector<size>> solve(vector<Vector<size>>& vectors){
-
+        SquareMatrix<size> m{*this};
+        array<double, size*size>& data{*m.data};
+        for(int i=0;i<size;++i){
+            const size_t iOffset{i*size};
+            if(data[iOffset+i]==0){
+                bool found{false};
+                for(int j=i+1;j<size;++j){
+                    if(data[j*size+i]!=0){
+                        m.swapRows(i,j);
+                        for(auto& v: vectors){
+                            v.swapRows(i,j);
+                        }
+                        found=true;
+                        break;
+                    }
+                }
+                if(!found){
+                    return vector<Vector<size>>{Vector<size>::zero()};
+                }
+            }
+            for(int j=i+1;j<size;++j){
+                const size_t jOffset{j*size};
+                const double factor{data[jOffset+i]/data[iOffset+i]};
+                data[jOffset+i]=factor;
+                for(int k=i+1;k<size;++k){
+                    data[jOffset+k]-=factor * data[iOffset+k];
+                }
+                (*vectors[0].data)[j]-=factor * (*vectors[0].data)[i];
+            }
+        }
+        for(int i=0;i<size;++i){
+            const size_t offset{(size-1-i)*size+size -1};
+            double rhs{vectors[0][size-1-i]};
+            for(int j=0;j<i;++j){
+                rhs-=vectors[0][size-1-j]*data[offset -j];
+            }
+            vectors[0][size-1-i]=rhs/data[offset -i];
+        }
+        for(int v=1;v<vectors.size();++v){
+            for(int i=0;i<size;++i){
+                const size_t offset{i*size};
+                double rhs{vectors[v][i]};
+                for(int j=0;j<i;++j){
+                    rhs-=vectors[v][j]*data[offset + j];
+                }
+                vectors[v][i]=rhs;
+            }
+            for(int i=0;i<size;++i){
+                const size_t offset{(size-1-i)*size+size -1};
+                double rhs{vectors[v][size-1-i]};
+                for(int j=0;j<i;++j){
+                    rhs-=vectors[v][size-1-j]*data[offset -j];
+                }
+                vectors[v][size-1-i]=rhs/data[offset -i];
+            }
+        }
+        return vectors;
     }
     static SquareMatrix filledWith(const double value){
         SquareMatrix ret{};

@@ -52,7 +52,11 @@ int main(){
    cout<<"determinant calculated after "<<duration<<"s"<<endl;
     */
    SquareMatrix<3> m{{1,2,3,0,5,6,7,8,9}};
-   vector<Vector<3>> v{{Vector<3>{{1,2,3}}}};
-   cout<<m.solve(v)[0]<<endl;
+   cout<<m<<endl;
+   vector<Vector<3>> v{{Vector<3>{{1,2,3}},Vector<3>{{2,4,6}},Vector<3>{{4,8,12}}}};
+   vector<Vector<3>> v2{m.solve(v)};
+   for(const auto& vec:v2){
+    cout<<vec<<endl;
+   }
    return 0;
 }
