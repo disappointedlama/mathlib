@@ -3,7 +3,6 @@ int main(){
     using namespace mathlib::matrix;
     double start, end, duration;
     /*
-    */
     SquareMatrix<4000> very_large_m{SquareMatrix<4000>::getRandom(0,100)};
     start = omp_get_wtime();
     very_large_m = 2 * very_large_m * very_large_m - 2 * very_large_m;
@@ -21,9 +20,6 @@ int main(){
     start=omp_get_wtime();
     cout<<large_sqm.determinant()<<endl;
     cout<<"done after "<<omp_get_wtime()-start<<"s"<<endl;
-    SquareMatrix<100> sqm3{SquareMatrix<100>::getRandom(-1,1)};
-    Vector<100> tmp{Vector<100>::getRandom(-1,1)};
-    cout<<sqm3.solve(tmp);
     SquareMatrix<4096> benchmarkMatrix{SquareMatrix<4096>::getRandom(-1,1)};
     start=omp_get_wtime();
     SquareMatrix<4096> tmp2{benchmarkMatrix*benchmarkMatrix};
@@ -48,5 +44,12 @@ int main(){
     cout<<SquareMatrix<2>{{1,4,1,1}}.exponential()<<endl;
     SquareMatrix<3> matr{{1,2,3,4,5,6,7,8,9}};
     matr*=2;
+    */
+    Vector<3> c1{{1,2,3}};
+    Vector<3> c2{{4,5,6}};
+    cout<<crossProduct(c1,c2)<<endl;
+    cout<<angle(c1,crossProduct(c1,c2))<<endl;
+    cout<<SquareMatrix<2>{{1,2,3,4}}.determinant()<<endl;
+    cout<<SquareMatrix<3>{{0,2,3,4,5,6,7,8,9}}.determinant()<<endl;
     return 0;
 }

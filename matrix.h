@@ -8,10 +8,8 @@
 #include<chrono>
 #include"omp.h"
 namespace mathlib{
-    namespace matrix{
+namespace matrix{
 using std::array, std::vector, std::cout, std::endl, std::initializer_list;
-template<size_t rows, size_t cols>
-class Matrix;
 template<size_t dim>
 class Vector;
 template<size_t rows, size_t cols>
@@ -29,7 +27,7 @@ public:
         std::fill(ret.data->begin(), ret.data->end(), value);
         return ret;
     }
-    constexpr Matrix& swapRows(const size_t i, const size_t j){
+    inline Matrix& swapRows(const size_t i, const size_t j){
         const size_t iOffset{i*cols};
         const size_t jOffset{j*cols};
         for(int k=0;k<cols;++k){
@@ -37,14 +35,14 @@ public:
         }
         return *this;
     }
-    constexpr Matrix& swapCols(const size_t i, const size_t j){
+    inline Matrix& swapCols(const size_t i, const size_t j){
         for(int k=0;k<rows;++k){
             const size_t offset{k*cols};
             std::swap((*data)[offset+i],(*data)[offset+j]);
         }
         return *this;
     }
-    constexpr Matrix<cols,rows> transpose() const{
+    inline Matrix<cols,rows> transpose() const{
         array<double, cols*rows>* ret{ new array<double, cols*rows>{} };        
         #pragma omp parallel for if(rows*cols>2000)
         for(int i=0;i<cols;++i){
@@ -62,12 +60,12 @@ public:
         }
         return ret;
     }
-    constexpr Matrix& operator=(const Matrix& other){
+    inline Matrix& operator=(const Matrix& other){
         delete data;
         data=new array<double,rows*cols>{*other.data};
         return *this;
     }
-    constexpr Matrix& operator+=(const Matrix& rhs){
+    inline Matrix& operator+=(const Matrix& rhs){
         #pragma omp parallel for if(rows*cols>=1000000)
         for(int i=0;i<rows;++i){
             for(int j=0;j<cols;++j){
@@ -76,7 +74,7 @@ public:
         }
         return *this;
     }
-    constexpr Matrix& operator-=(const Matrix& rhs){
+    inline Matrix& operator-=(const Matrix& rhs){
         #pragma omp parallel for if(rows*cols>=1000000)
         for(int i=0;i<rows;++i){
             for(int j=0;j<cols;++j){
@@ -85,14 +83,14 @@ public:
         }
         return *this;
     }
-    constexpr Matrix& operator*=(const double factor){
+    inline Matrix& operator*=(const double factor){
         #pragma omp parallel for if(rows*cols>=1000000)
         for(int i=0;i<data->size();++i){
             (*data)[i]*=factor;
         }
         return *this;
     }
-    friend constexpr Vector<rows> operator*(const Matrix<rows,cols>& m, const Vector<cols>& v){
+    friend inline Vector<rows> operator*(const Matrix<rows,cols>& m, const Vector<cols>& v){
         array<double,rows> ret{};
         for(int i=0;i<rows;++i){
             double value{0};
@@ -104,11 +102,10 @@ public:
         return Vector<rows>{ret};
     }
     constexpr double& operator[](size_t pos){ return (*data)[pos]; }
-    friend constexpr bool operator==(const Matrix& m1, const Matrix& m2){
-        return !(m1!=m2);
-    }
+    constexpr double& operator[](size_t pos) const{ return (*data)[pos]; }
+    friend constexpr bool operator==(const Matrix& m1, const Matrix& m2){ return !(m1!=m2); }
     friend constexpr bool operator!=(const Matrix& m1, const Matrix& m2){ return *m1.data!=*m2.data; }
-    friend constexpr Matrix<rows,rows> operator*(const Matrix<rows,cols>& m1, const Matrix<cols,rows>& m2) {
+    friend inline Matrix<rows,rows> operator*(const Matrix<rows,cols>& m1, const Matrix<cols,rows>& m2) {
         array<double, rows*rows>* ret{new array<double, rows*rows>{}};
         array<double, rows*cols>* tmp{new array<double, rows*cols>{}};
         array<double, rows*cols>& arr1{*m1.data};
@@ -145,6 +142,7 @@ public:
     }
 };
 template<size_t rows, size_t cols> std::default_random_engine Matrix<rows,cols>::re{(unsigned long long)std::chrono::steady_clock::now().time_since_epoch().count()};
+
 template<size_t dim>
 class Vector : public Matrix<dim,1>{
 public:
@@ -153,15 +151,15 @@ public:
     Vector(const Vector& other) : Matrix<dim,1>{other}{}
     Vector(const Matrix<dim,1>& other) : Matrix<dim,1>{other}{}
     Vector(const array<double,dim> data) : Matrix<dim,1>{data}{}
-    constexpr Vector& operator*=(const double factor){
+    inline Vector& operator*=(const double factor){
         for(int i=0;i<this->data->size();++i){
             (*this->data)[i]*=factor;
         }
         return *this;
     }
-    constexpr double operator*(const Vector<dim>& rhs){
+    friend constexpr double operator*(const Vector<dim>& lhs, const Vector<dim>& rhs){
         double ret{};
-        const array<double,dim>& arr1{*Matrix<dim,1>::data};
+        const array<double,dim>& arr1{*lhs.data};
         const array<double,dim>& arr2{*rhs.data};
         #pragma omp parallel for simd reduction(+:ret) if(dim>100000)
         for(int i=0;i<dim;++i){
@@ -178,7 +176,7 @@ public:
         }
         return std::sqrt(ret);
     }
-    static constexpr Vector zero(){
+    static inline Vector zero(){
         array<double,dim>* data{};
         for(int i=0;i<dim;++i){
             (*data)[i]=0;
@@ -194,7 +192,7 @@ public:
     SquareMatrix(const SquareMatrix& other) : Matrix<size,size>{other}{}
     SquareMatrix(const Matrix<size,size>& other) : Matrix<size,size>{other}{}
     SquareMatrix(const array<double,size*size> data) : Matrix<size,size>{data}{}
-    constexpr SquareMatrix& transposeInPlace(){   
+    inline SquareMatrix& transposeInPlace(){   
         #pragma omp parallel for if(size*size>2000)
         for(int i=0;i<size;++i){
             for(int j=i;j<size;++j){
@@ -267,7 +265,7 @@ public:
         }
         return true;
     }
-    constexpr SquareMatrix exponential() const{
+    inline SquareMatrix exponential() const{
         const size_t k{1ULL<<31};
         SquareMatrix m{SquareMatrix::identity()+(1.0/k)*(*this)};
         for(size_t i=1;i<k;i*=2){
@@ -275,7 +273,7 @@ public:
         }
         return m;
     }
-    constexpr Vector<size> solve(Vector<size>& v) const{
+    inline Vector<size> solve(Vector<size>& v) const{
         //solve with gauß algorithm
         SquareMatrix<size> m{*this};
         array<double, size*size>& data{*m.data};
@@ -314,7 +312,7 @@ public:
         }
         return ret;
     }
-    constexpr vector<Vector<size>> solve(vector<Vector<size>>& vectors){
+    inline vector<Vector<size>> solve(vector<Vector<size>>& vectors){
         SquareMatrix<size> m{*this};
         array<double, size*size>& data{*m.data};
         for(int i=0;i<size;++i){
@@ -386,8 +384,8 @@ public:
         return ret;
     }
     template<size_t>
-    friend constexpr SquareMatrix operator*(const SquareMatrix& m1, const SquareMatrix& m2);
-    constexpr SquareMatrix& operator*=(const SquareMatrix& m) {
+    friend inline SquareMatrix operator*(const SquareMatrix& m1, const SquareMatrix& m2);
+    inline SquareMatrix& operator*=(const SquareMatrix& m) {
         array<double, size*size>* ret{new array<double, size*size>{}};
         array<double, size*size>* tmp{new array<double, size*size>{}};
         array<double, size*size>& arr1{*m.data};
@@ -417,7 +415,7 @@ public:
         this->data=ret;
         return *this;
     }
-    constexpr SquareMatrix& operator*=(const double factor){
+    inline SquareMatrix& operator*=(const double factor){
         #pragma omp parallel for if(size*size>=1000000)
         for(int i=0;i<this->data->size();++i){
             (*this->data)[i]*=factor;
@@ -454,13 +452,40 @@ constexpr SquareMatrix<size> operator*(const SquareMatrix<size>& m1, const Squar
     delete tmp;
     return SquareMatrix<size>{ret};
 }
+
+template<>
+constexpr double SquareMatrix<2>::determinant() const {
+    return (*this)[0]*(*this)[3] - (*this)[1]*(*this)[2];
+}
+template<>
+constexpr double SquareMatrix<2>::determinantInPlace() {
+    return determinant();
+}
+template<>
+constexpr double SquareMatrix<3>::determinant() const {
+    const array<double,9>& arr{*this->data};
+    return arr[0]*arr[4]*arr[8] + arr[2]*arr[3]*arr[7] + arr[1]*arr[5]*arr[6] - arr[2]*arr[4]*arr[6] - arr[0]*arr[5]*arr[7] - arr[8]*arr[1]*arr[3];
+}
+template<>
+constexpr double SquareMatrix<3>::determinantInPlace() {
+    return determinant();
+}
 template<typename T>
-constexpr T operator+(const T& m1, const T& m2) { return T{m1}+=m2; };
+inline T operator+(const T& m1, const T& m2) { return T{m1}+=m2; };
 template<typename T>
-constexpr T operator-(const T& m1, const T& m2) { return T{m1}-=m2; };
+inline T operator-(const T& m1, const T& m2) { return T{m1}-=m2; };
 template<typename T>
-constexpr T operator*(const T& m, const double factor) { return T{m}*=factor; }
+inline T operator*(const T& m, const double factor) { return T{m}*=factor; }
 template<typename T>
-constexpr T operator*(const double factor, const T& m) { return m * factor; }
-    }
+inline T operator*(const double factor, const T& m) { return m * factor; }
+template<typename T>
+inline T operator/(const T& m, const double factor) { return T{m}*=1.0/factor; }
+inline Vector<3> crossProduct(const Vector<3>& v1, const Vector<3>& v2){
+    return Vector<3>{{v1[1]*v2[2]-v1[2]*v2[1],v1[2]*v2[0]-v1[0]*v2[2],v1[0]*v2[1]-v1[1]*v2[0]}};
+}
+template<size_t dim>
+constexpr double angle(const Vector<dim>& v1, const Vector<dim>& v2){
+    return std::acos((v1*v2)/(v1.abs()*v2.abs()));
+}
+}
 }
