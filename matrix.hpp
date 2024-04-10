@@ -265,6 +265,22 @@ public:
         }
         return true;
     }
+    inline SquareMatrix pow(unsigned int exponent) const{
+        SquareMatrix ret{*this};
+        size_t powersOfTwo{0};
+        unsigned int tmp{1};
+        while((tmp*=2)<exponent){
+            ++powersOfTwo;
+        }
+        tmp/=2;
+        for(int i=0;i<powersOfTwo;++i){
+            ret*=ret;
+        }
+        for(int i=0;i<exponent-tmp;++i){
+            ret*=*this;
+        }
+        return ret;
+    }
     inline SquareMatrix exponential() const{
         const size_t k{1ULL<<31};
         SquareMatrix m{SquareMatrix::identity()+(1.0/k)*(*this)};

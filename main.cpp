@@ -1,6 +1,8 @@
-#include"matrix.h"
+#include"matrix.hpp"
+#include"complex.hpp"
 int main(){
     using namespace mathlib::matrix;
+    using mathlib::Complex;
     double start, end, duration;
     /*
     SquareMatrix<4000> very_large_m{SquareMatrix<4000>::getRandom(0,100)};
@@ -51,5 +53,8 @@ int main(){
     cout<<angle(c1,crossProduct(c1,c2))<<endl;
     cout<<SquareMatrix<2>{{1,2,3,4}}.determinant()<<endl;
     cout<<SquareMatrix<3>{{0,2,3,4,5,6,7,8,9}}.determinant()<<endl;
+    cout<<SquareMatrix<3>{{0,2,3,4,5,6,7,8,9}}.pow(31)<<endl;
+    Complex compl1{1,-2};
+    cout<<compl1<<endl;
     return 0;
 }
