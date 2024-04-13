@@ -265,6 +265,9 @@ public:
         }
         return true;
     }
+    constexpr bool isSpd() const{
+        return cholesky()!= -1 * identity();
+    }
     inline SquareMatrix pow(unsigned int exponent) const{
         SquareMatrix ret{*this};
         size_t powersOfTwo{0};
@@ -300,6 +303,7 @@ public:
                 for(int j=i+1;j<size;++j){
                     if(data[j*size+i]!=0){
                         m.swapRows(i,j);
+                        v.swapRows(i,j);
                         found=true;
                         break;
                     }
@@ -386,6 +390,32 @@ public:
             }
         }
         return vectors;
+    }
+    inline SquareMatrix cholesky() const{
+        //only if matrix is spd
+        SquareMatrix ret{*this};
+        for(int i=0;i<size;++i){
+            const size_t iOffset{i*size+i};
+            if(ret[iOffset]<0){
+                //matrix not spd
+                return -1*SquareMatrix::identity();
+            }
+            const double sqrt{std::sqrt(ret[iOffset])};
+            ret[iOffset]=sqrt;
+            for(int j=1;j<size-i;++j){
+                ret[iOffset+j]/=sqrt;
+            }
+            for(int j=1;i-j>=0;++j){
+                ret[iOffset-j]=0;
+            }
+            for(int j=i+1;j<size;++j){
+                const size_t jOffset{j*size};
+                for(int k=j;k<size;++k){
+                    ret[jOffset+k]-=ret[i*size+k]*ret[i*size+j];
+                }
+            }
+        }
+        return ret.transposeInPlace();
     }
     static SquareMatrix filledWith(const double value){
         SquareMatrix ret{};

@@ -56,5 +56,13 @@ int main(){
     cout<<SquareMatrix<3>{{0,2,3,4,5,6,7,8,9}}.pow(31)<<endl;
     Complex compl1{1,-2};
     cout<<compl1<<endl;
+    cout<<SquareMatrix<3>{{4,2,4,2,10,5,4,5,21}}.isSpd()<<endl;
+    double d{-1.0/((1+4)*(1+4))};
+    Vector<4> v{{d,d,d,d}};
+    SquareMatrix<4> sqm{{2,-1,0,0,-1,2,-1,0,0,-1,2,-1,0,0,-1,2}};
+    cout<<sqm<<endl;
+    cout<<sqm.solve(v)<<endl;
+    cout<<sqm.cholesky()<<endl;
+    cout<<sqm.cholesky().transposeInPlace()<<endl;
     return 0;
 }
