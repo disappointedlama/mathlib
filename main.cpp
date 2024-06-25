@@ -1,8 +1,8 @@
-#include"matrix.hpp"
-#include"complex.hpp"
+#include"complex_matrix.hpp"
+#include"real_vector.hpp"
+#include"complex_vector.hpp"
 int main(){
-    using namespace mathlib::matrix;
-    using mathlib::Complex;
+    using namespace mathlib;
     double start, end, duration;
     /*
     SquareMatrix<4000> very_large_m{SquareMatrix<4000>::getRandom(0,100)};
@@ -46,7 +46,6 @@ int main(){
     cout<<SquareMatrix<2>{{1,4,1,1}}.exponential()<<endl;
     SquareMatrix<3> matr{{1,2,3,4,5,6,7,8,9}};
     matr*=2;
-    */
     Vector<3> c1{{1,2,3}};
     Vector<3> c2{{4,5,6}};
     cout<<crossProduct(c1,c2)<<endl;
@@ -64,5 +63,11 @@ int main(){
     cout<<sqm.solve(v)<<endl;
     cout<<sqm.cholesky()<<endl;
     cout<<sqm.cholesky().transposeInPlace()<<endl;
+    */
+    ComplexVector<2>vec{{1,2}};
+    ComplexMatrix<2,2>mat{std::array<Complex,4>{1+2.0_i, 3, 3-4.0_i, 5.0_i}};
+    std::cout<<vec<<std::endl;
+    std::cout<<mat<<std::endl;
+    std::cout<<mat*vec<<std::endl;
     return 0;
 }

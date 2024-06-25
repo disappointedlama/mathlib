@@ -184,6 +184,7 @@ public:
         return Vector{data};
     }
 };
+
 template<size_t size>
 class SquareMatrix : public Matrix<size,size>{
 public:
@@ -299,16 +300,19 @@ public:
         for(int i=0;i<size;++i){
             const size_t iOffset{i*size};
             if(data[iOffset+i]==0){
-                bool found{false};
+                size_t index{0};
+                double value{std::numeric_limits<double>::min()};
                 for(int j=i+1;j<size;++j){
-                    if(data[j*size+i]!=0){
-                        m.swapRows(i,j);
-                        v.swapRows(i,j);
-                        found=true;
-                        break;
+                    if(data[j*size+i]!=0 && std::abs(data[j*size+i])>value){
+                        index=j;
+                        value=std::abs(data[j*size+i]);
                     }
                 }
-                if(!found){
+                if(index){
+                    m.swapRows(i,index);
+                    v.swapRows(i,index);
+                }
+                else{
                     return Vector<size>::zero();
                 }
             }
@@ -338,18 +342,21 @@ public:
         for(int i=0;i<size;++i){
             const size_t iOffset{i*size};
             if(data[iOffset+i]==0){
-                bool found{false};
+                size_t index{0};
+                double value{std::numeric_limits<double>::min()};
                 for(int j=i+1;j<size;++j){
-                    if(data[j*size+i]!=0){
-                        m.swapRows(i,j);
-                        for(auto& v: vectors){
-                            v.swapRows(i,j);
-                        }
-                        found=true;
-                        break;
+                    if(data[j*size+i]!=0 && std::abs(data[j*size+i])>value){
+                        index=j;
+                        value=std::abs(data[j*size+i]);
                     }
                 }
-                if(!found){
+                if(index){
+                    m.swapRows(i,index);
+                    for(auto& v: vectors){
+                        v.swapRows(i,index);
+                    }
+                }
+                else{
                     return vector<Vector<size>>{Vector<size>::zero()};
                 }
             }
