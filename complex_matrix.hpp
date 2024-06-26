@@ -3,20 +3,34 @@
 #include<chrono>
 #include<array>
 #include<memory>
+#include<cassert>
 #include"complex.hpp"
 #include"real_matrix.hpp"
 namespace mathlib{
 using std::array;
 template<size_t rows, size_t cols>
 struct ComplexMatrix{
-public:
+    class ComplexMatrixRow{
+        static const size_t size = cols;
+        Complex* start;
+    public:
+        constexpr ComplexMatrixRow(Complex* start): start{start}{}
+        constexpr Complex& operator[](const size_t pos) {
+            assert(pos<size);
+            return start[pos];
+        }
+        constexpr const Complex& operator[](const size_t pos)const {
+            assert(pos<size);
+            return start[pos];
+        }
+    };
     static std::default_random_engine re;
-    array<Complex,rows*cols>* data;
+public:
+    std::unique_ptr<array<Complex,rows*cols>> data;
     ComplexMatrix() : data{new array<Complex,rows*cols>{}}{}
     ComplexMatrix(array<Complex,rows*cols>* data) : data{data}{}
     ComplexMatrix(const ComplexMatrix& other) : data{new array<Complex,rows*cols>{*other.data}}{}
     ComplexMatrix(const array<Complex,rows*cols> data) : data{new array<Complex,rows*cols>{data}}{}
-    ~ComplexMatrix(){ delete data; }
     static ComplexMatrix filledWith(const Complex value){
         ComplexMatrix ret{};
         std::fill(ret.data->begin(), ret.data->end(), value);
@@ -56,8 +70,7 @@ public:
         return ret;
     }
     inline ComplexMatrix& operator=(const ComplexMatrix& other){
-        delete data;
-        data=new array<Complex,rows*cols>{*other.data};
+        data=std::make_unique<array<Complex,rows*cols>>(*other.data);
         return *this;
     }
     inline ComplexMatrix& operator+=(const ComplexMatrix& rhs){
@@ -85,21 +98,14 @@ public:
         }
         return *this;
     }
-    /*
-    friend inline ComplexVector<rows> operator*(const ComplexMatrix<rows,cols>& m, const ComplexVector<cols>& v){
-        array<Complex,rows> ret{};
-        for(int i=0;i<rows;++i){
-            Complex value{0};
-            for(int j=0;j<cols;++j){
-                value+=(*m.data)[i*cols+j]*(*v.data)[j];
-            }
-            ret[i]=value;
-        }
-        return ComplexVector<rows>{ret};
+    constexpr ComplexMatrixRow operator[](const size_t pos){
+        assert(pos<rows);
+        return ComplexMatrixRow{(Complex*)data.get()+pos*cols};
     }
-    */
-    constexpr Complex& operator[](const size_t pos){ return (*data)[pos]; }
-    constexpr Complex& operator[](const size_t pos) const{ return (*data)[pos]; }
+    constexpr const ComplexMatrixRow operator[](const size_t pos) const{
+        assert(pos<rows);
+        return ComplexMatrixRow{(Complex*)data.get()+pos*cols};
+    }
     friend constexpr bool operator==(const ComplexMatrix& m1, const ComplexMatrix& m2){ return !(m1!=m2); }
     friend constexpr bool operator!=(const ComplexMatrix& m1, const ComplexMatrix& m2){ return *m1.data!=*m2.data; }
     template<size_t other_cols>
@@ -131,7 +137,7 @@ public:
         return ComplexMatrix<rows,other_cols>{ret};
     }
     template<size_t other_cols>
-    friend inline RealMatrix<rows,other_cols> operator*(const ComplexMatrix<rows,cols>& m1, const RealMatrix<cols,other_cols>& m2) {
+    friend inline ComplexMatrix<rows,other_cols> operator*(const ComplexMatrix<rows,cols>& m1, const RealMatrix<cols,other_cols>& m2) {
         array<Complex, rows*other_cols>* ret{new array<Complex, rows*other_cols>{}};
         std::unique_ptr<array<long double, other_cols*cols>> tmp=std::make_unique<array<long double, other_cols*cols>>();
         array<Complex, rows*cols>& arr1{*m1.data};
@@ -164,6 +170,30 @@ public:
             o<<std::setw(6)<<(*m.data)[i]<<" ";
         }
         return o<<"\n";
+    }
+    template<typename T>
+    inline void apply(T (*func)(Complex)){
+        for(int i=0;i<rows;++i){
+            for(int j=0;j<cols;++j){
+                (*data)[i*cols+j] = static_cast<Complex>(func((*data)[i*cols+j]));
+            }
+        }
+    }
+    template<typename T>
+    inline void apply(T (*func)(const size_t, const size_t)){
+        for(int i=0;i<rows;++i){
+            for(int j=0;j<cols;++j){
+                (*data)[i*cols+j] = static_cast<Complex>(func(i,j));
+            }
+        }
+    }
+    template<typename T>
+    inline void apply(T (*func)(const size_t, const size_t, Complex)){
+        for(int i=0;i<rows;++i){
+            for(int j=0;j<cols;++j){
+                (*data)[i*cols+j] = static_cast<Complex>(func(i,j,(*data)[i*cols+j]));
+            }
+        }
     }
 };
 

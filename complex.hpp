@@ -2,7 +2,9 @@
 #include<iostream>
 namespace mathlib{
 struct Complex;
+namespace mathlib_literals{
 constexpr Complex operator ""_i(long double arg);
+}
 struct Complex{
     long double rl;
     long double im;
@@ -61,12 +63,22 @@ constexpr Complex operator/(const T factor, const Complex& c){ return Complex{c}
 constexpr Complex operator*(const long double factor, const Complex& c){ return Complex{c}*=factor; }
 constexpr Complex operator/(const long double factor, const Complex& c){ return Complex{c}/=factor; }
 inline std::ostream& operator<<(std::ostream& o, const Complex& c){
-    if(c.im<0) o<<c.rl<<c.im<<"i";
-    else if(c.im>0) o<<c.rl<<"+"<<c.im<<"i";
+    if(c.im<0){
+        if(c.rl!=0) o<<c.rl;
+        if(c.im==1) o<<"i";
+        else o<<c.im<<"i";
+    }
+    else if(c.im>0){
+        if(c.rl!=0) o<<c.rl;
+        if(c.im==1) o<<"+i";
+        else o<<c.im<<"i";
+    }
     else o<<c.rl;
     return o;
 }
+namespace math_lib_literals{
 constexpr Complex operator ""_i(long double arg){
     return Complex{0,arg};
+}
 }
 }

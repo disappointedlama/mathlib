@@ -4,19 +4,35 @@
 #include<array>
 #include<iostream>
 #include<iomanip>
+#include<memory>
+#include<cassert>
+#include<type_traits>
 #include"omp.h"
 namespace mathlib{
 using std::array, std::vector, std::cout, std::endl;
 template<size_t rows, size_t cols>
 class RealMatrix{
-public:
+    class RealMatrixRow{
+        static const size_t size = cols;
+        long double* start;
+    public:
+        constexpr RealMatrixRow(long double* start): start{start}{}
+        constexpr long double& operator[](const size_t pos) {
+            assert(pos<size);
+            return start[pos];
+        }
+        constexpr const long double& operator[](const size_t pos)const {
+            assert(pos<size);
+            return start[pos];
+        }
+    };
     static std::default_random_engine re;
-    array<long double,rows*cols>* data;
+public:
+    std::unique_ptr<array<long double,rows*cols>> data;
     RealMatrix() : data{new array<long double,rows*cols>{}}{}
     RealMatrix(array<long double,rows*cols>* data) : data{data}{}
     RealMatrix(const RealMatrix& other) : data{new array<long double,rows*cols>{*other.data}}{}
     RealMatrix(const array<long double,rows*cols> data) : data{new array<long double,rows*cols>{data}}{}
-    ~RealMatrix(){ delete data; }
     static RealMatrix filledWith(const long double value){
         RealMatrix ret{};
         std::fill(ret.data->begin(), ret.data->end(), value);
@@ -56,8 +72,7 @@ public:
         return ret;
     }
     inline RealMatrix& operator=(const RealMatrix& other){
-        delete data;
-        data=new array<long double,rows*cols>{*other.data};
+        data=std::make_unique<array<long double, rows*cols>>(*other.data);
         return *this;
     }
     inline RealMatrix& operator+=(const RealMatrix& rhs){
@@ -85,8 +100,14 @@ public:
         }
         return *this;
     }
-    constexpr long double& operator[](size_t pos){ return (*data)[pos]; }
-    constexpr long double& operator[](size_t pos) const{ return (*data)[pos]; }
+    constexpr RealMatrixRow operator[](const size_t pos){
+        assert(pos<rows);
+        return RealMatrixRow{(long double*)data.get()+pos*cols};
+    }
+    constexpr const RealMatrixRow operator[](const size_t pos) const{
+        assert(pos<rows);
+        return RealMatrixRow{(long double*)data.get()+pos*cols};
+    }
     friend constexpr bool operator==(const RealMatrix& m1, const RealMatrix& m2){ return !(m1!=m2); }
     friend constexpr bool operator!=(const RealMatrix& m1, const RealMatrix& m2){ return *m1.data!=*m2.data; }
     template<size_t other_cols>
@@ -124,7 +145,30 @@ public:
         }
         return o<<"\n";
     }
+    template<typename T>
+    inline void apply(T (*func)(long double)){
+        for(int i=0;i<rows;++i){
+            for(int j=0;j<cols;++j){
+                (*data)[i*cols+j] = static_cast<long double>(func((*data)[i*cols+j]));
+            }
+        }
+    }
+    template<typename T>
+    inline void apply(T (*func)(const size_t, const size_t)){
+        for(int i=0;i<rows;++i){
+            for(int j=0;j<cols;++j){
+                (*data)[i*cols+j] = static_cast<long double>(func(i,j));
+            }
+        }
+    }
+    template<typename T>
+    inline void apply(T (*func)(const size_t, const size_t, long double)){
+        for(int i=0;i<rows;++i){
+            for(int j=0;j<cols;++j){
+                (*data)[i*cols+j] = static_cast<long double>(func(i,j,(*data)[i*cols+j]));
+            }
+        }
+    }
 };
-
 template<size_t rows, size_t cols> std::default_random_engine RealMatrix<rows,cols>::re{(unsigned long long)std::chrono::steady_clock::now().time_since_epoch().count()};
 }

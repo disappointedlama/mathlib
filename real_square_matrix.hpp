@@ -9,7 +9,7 @@ public:
     SquareRealMatrix(const SquareRealMatrix& other) : RealMatrix<size,size>{other}{}
     SquareRealMatrix(const RealMatrix<size,size>& other) : RealMatrix<size,size>{other}{}
     SquareRealMatrix(const array<long double,size*size> data) : RealMatrix<size,size>{data}{}
-    inline SquareRealMatrix& transposeInPlace(){   
+    inline SquareRealMatrix& transposeInPlace(){
         #pragma omp parallel for if(size*size>2000)
         for(int i=0;i<size;++i){
             for(int j=i;j<size;++j){

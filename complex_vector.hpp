@@ -15,6 +15,14 @@ public:
         }
         return *this;
     }
+    constexpr Complex& operator[](const size_t pos){
+        assert(pos<dim);
+        return *((Complex*)ComplexMatrix<dim,1>::data.get()+pos);
+    }
+    constexpr const Complex& operator[](const size_t pos) const{
+        assert(pos<dim);
+        return *((Complex*)ComplexMatrix<dim,1>::data.get()+pos);
+    }
     friend constexpr Complex operator*(const ComplexVector<dim>& lhs, const ComplexVector<dim>& rhs){
         Complex ret{};
         const array<Complex,dim>& arr1{*lhs.data};
@@ -40,18 +48,6 @@ public:
             (*data)[i]=0;
         }
         return ComplexVector{data};
-    }
-    template<size_t rows>
-    friend inline ComplexVector<rows> operator*(const ComplexMatrix<rows,dim>& m, const ComplexVector<dim>& v){
-        array<Complex,rows> ret{};
-        for(int i=0;i<rows;++i){
-            Complex value{0};
-            for(int j=0;j<dim;++j){
-                value+=(*m.data)[i*dim+j]*(*v.data)[j];
-            }
-            ret[i]=value;
-        }
-        return ComplexVector<rows>{ret};
     }
 };
 inline ComplexVector<3> crossProduct(const ComplexVector<3>& v1, const ComplexVector<3>& v2){

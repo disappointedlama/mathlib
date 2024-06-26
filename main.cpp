@@ -64,10 +64,17 @@ int main(){
     cout<<sqm.cholesky()<<endl;
     cout<<sqm.cholesky().transposeInPlace()<<endl;
     */
+    using namespace math_lib_literals;
     ComplexVector<2>vec{{1,2}};
     ComplexMatrix<2,2>mat{std::array<Complex,4>{1+2.0_i, 3, 3-4.0_i, 5.0_i}};
     std::cout<<vec<<std::endl;
     std::cout<<mat<<std::endl;
     std::cout<<mat*vec<<std::endl;
+    std::cout<<vec*vec<<std::endl;
+    std::cout<<mat[1][1]<<std::endl;
+    vec.apply<Complex>([](size_t i, size_t j, Complex value){
+        return 6+1.0_i;
+    });
+    std::cout<<vec<<std::endl;
     return 0;
 }

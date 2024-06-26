@@ -15,6 +15,14 @@ public:
         }
         return *this;
     }
+    constexpr long double& operator[](const size_t pos){
+        assert(pos<dim);
+        return *((long double*)RealMatrix<dim,1>::data.get()+pos); 
+    }
+    constexpr const long double& operator[](const size_t pos) const{
+        assert(pos<dim);
+        return *((long double*)RealMatrix<dim,1>::data.get()+pos); 
+    }
     friend constexpr long double operator*(const RealVector<dim>& lhs, const RealVector<dim>& rhs){
         long double ret{};
         const array<long double,dim>& arr1{*lhs.data};
