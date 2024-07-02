@@ -18,10 +18,10 @@ public:
         }
         return *this;
     }
-    constexpr long double determinant() const {
+    inline long double determinant() const {
         return SquareRealMatrix{*this}.determinantInPlace();
     }
-    constexpr long double determinantInPlace(){
+    inline long double determinantInPlace(){
         array<long double, size*size>& data{*this->data};
         long double sign{1};
         for(int i=0;i<size;++i){
@@ -219,22 +219,22 @@ public:
         SquareRealMatrix ret{*this};
         for(int i=0;i<size;++i){
             const size_t iOffset{i*size+i};
-            if(ret[iOffset]<0){
+            if(ret[i][i]<0){
                 //matrix not spd
-                return -1*SquareRealMatrix::identity();
+                return -1.0*SquareRealMatrix::identity();
             }
-            const long double sqrt{std::sqrt(ret[iOffset])};
-            ret[iOffset]=sqrt;
+            const long double sqrt{std::sqrt(ret[i][i])};
+            ret[i][i]=sqrt;
             for(int j=1;j<size-i;++j){
-                ret[iOffset+j]/=sqrt;
+                ret[i][i+j]/=sqrt;
             }
             for(int j=1;i-j>=0;++j){
-                ret[iOffset-j]=0;
+                ret[i][i-j]=0;
             }
             for(int j=i+1;j<size;++j){
                 const size_t jOffset{j*size};
                 for(int k=j;k<size;++k){
-                    ret[jOffset+k]-=ret[i*size+k]*ret[i*size+j];
+                    ret[j][k]-=ret[i][k]*ret[i][j];
                 }
             }
         }
@@ -323,20 +323,20 @@ constexpr SquareRealMatrix<size> operator*(const SquareRealMatrix<size>& m1, con
 }
 
 template<>
-constexpr long double SquareRealMatrix<2>::determinant() const {
-    return (*this)[0]*(*this)[3] - (*this)[1]*(*this)[2];
+inline long double SquareRealMatrix<2>::determinant() const {
+    return (*this)[0][0]*(*this)[1][1] - (*this)[0][1]*(*this)[1][0];
 }
 template<>
-constexpr long double SquareRealMatrix<2>::determinantInPlace() {
+inline long double SquareRealMatrix<2>::determinantInPlace() {
     return determinant();
 }
 template<>
-constexpr long double SquareRealMatrix<3>::determinant() const {
-    const array<long double,9>& arr{*this->data};
+inline long double SquareRealMatrix<3>::determinant() const {
+    const array<long double,9>& arr{(*(this->data.get()))};
     return arr[0]*arr[4]*arr[8] + arr[2]*arr[3]*arr[7] + arr[1]*arr[5]*arr[6] - arr[2]*arr[4]*arr[6] - arr[0]*arr[5]*arr[7] - arr[8]*arr[1]*arr[3];
 }
 template<>
-constexpr long double SquareRealMatrix<3>::determinantInPlace() {
+inline long double SquareRealMatrix<3>::determinantInPlace() {
     return determinant();
 }
 }

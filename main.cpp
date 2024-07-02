@@ -1,6 +1,7 @@
 #include"complex_matrix.hpp"
 #include"real_vector.hpp"
 #include"complex_vector.hpp"
+#include"real_square_matrix.hpp"
 int main(){
     using namespace mathlib;
     double start, end, duration;
@@ -63,7 +64,6 @@ int main(){
     cout<<sqm.solve(v)<<endl;
     cout<<sqm.cholesky()<<endl;
     cout<<sqm.cholesky().transposeInPlace()<<endl;
-    */
     using namespace math_lib_literals;
     ComplexVector<2>vec{{1,2}};
     ComplexMatrix<2,2>mat{std::array<Complex,4>{1+2.0_i, 3, 3-4.0_i, 5.0_i}};
@@ -76,5 +76,8 @@ int main(){
         return 6+1.0_i;
     });
     std::cout<<vec<<std::endl;
+    */
+    SquareRealMatrix<4>m{{1,-1,1,-1,-1,5,-5,5,1,-5,14,-14,-1,5,-14,30}};
+    std::cout<<m.cholesky()<<std::endl;
     return 0;
 }

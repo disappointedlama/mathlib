@@ -108,6 +108,16 @@ public:
     }
     friend constexpr bool operator==(const ComplexMatrix& m1, const ComplexMatrix& m2){ return !(m1!=m2); }
     friend constexpr bool operator!=(const ComplexMatrix& m1, const ComplexMatrix& m2){ return *m1.data!=*m2.data; }
+    template<typename T>
+    friend inline ComplexMatrix operator*(const T& factor, const ComplexMatrix& m){
+        ComplexMatrix ret{m};
+        ret*=factor;
+        return ret;
+    }
+    template<typename T>
+    friend inline ComplexMatrix operator*(const ComplexMatrix& m, const T& factor){
+        return factor*m;
+    }
     template<size_t other_cols>
     friend inline ComplexMatrix<rows,other_cols> operator*(const ComplexMatrix<rows,cols>& m1, const ComplexMatrix<cols,other_cols>& m2) {
         array<Complex, rows*other_cols>* ret{new array<Complex, rows*other_cols>{}};

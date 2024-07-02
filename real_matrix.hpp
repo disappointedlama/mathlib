@@ -67,7 +67,7 @@ public:
         std::uniform_real_distribution<long double> unif(lower_bound,upper_bound);
         RealMatrix ret{};
         for(int i=0;i<ret.data->size();++i){
-            ret[i]=unif(RealMatrix::re);
+            ret.data->data()[i]=unif(RealMatrix::re);
         }
         return ret;
     }
@@ -110,6 +110,16 @@ public:
     }
     friend constexpr bool operator==(const RealMatrix& m1, const RealMatrix& m2){ return !(m1!=m2); }
     friend constexpr bool operator!=(const RealMatrix& m1, const RealMatrix& m2){ return *m1.data!=*m2.data; }
+    template<typename T>
+    friend inline RealMatrix operator*(const T& factor, const RealMatrix& m){
+        RealMatrix ret{m};
+        ret*=factor;
+        return ret;
+    }
+    template<typename T>
+    friend inline RealMatrix operator*(const RealMatrix& m, const T& factor){
+        return factor*m;
+    }
     template<size_t other_cols>
     friend inline RealMatrix<rows,other_cols> operator*(const RealMatrix<rows,cols>& m1, const RealMatrix<cols,other_cols>& m2) {
         array<long double, rows*other_cols>* ret{new array<long double, rows*other_cols>{}};

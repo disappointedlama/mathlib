@@ -9,6 +9,12 @@ public:
     ComplexVector(const ComplexVector& other) : ComplexMatrix<dim,1>{other}{}
     ComplexVector(const ComplexMatrix<dim,1>& other) : ComplexMatrix<dim,1>{other}{}
     ComplexVector(const array<Complex,dim> data) : ComplexMatrix<dim,1>{data}{}
+    inline ComplexVector& operator*=(const long double factor){
+        for(int i=0;i<this->data->size();++i){
+            (*this->data)[i]*=factor;
+        }
+        return *this;
+    }
     inline ComplexVector& operator*=(const Complex factor){
         for(int i=0;i<this->data->size();++i){
             (*this->data)[i]*=factor;

@@ -18,10 +18,10 @@ public:
         }
         return *this;
     }
-    constexpr Complex determinant() const {
+    inline Complex determinant() const {
         return SquareComplexMatrix{*this}.determinantInPlace();
     }
-    constexpr Complex determinantInPlace(){
+    inline Complex determinantInPlace(){
         array<Complex, size*size>& data{*this->data};
         Complex sign{1};
         for(int i=0;i<size;++i){
@@ -312,20 +312,20 @@ constexpr SquareComplexMatrix<size> operator*(const SquareComplexMatrix<size>& m
 }
 
 template<>
-constexpr Complex SquareComplexMatrix<2>::determinant() const {
-    return (*this)[0]*(*this)[3] - (*this)[1]*(*this)[2];
+inline Complex SquareComplexMatrix<2>::determinant() const {
+    return (*this)[0][0]*(*this)[1][1] - (*this)[0][1]*(*this)[1][0];
 }
 template<>
-constexpr Complex SquareComplexMatrix<2>::determinantInPlace() {
+inline Complex SquareComplexMatrix<2>::determinantInPlace() {
     return determinant();
 }
 template<>
-constexpr Complex SquareComplexMatrix<3>::determinant() const {
-    const array<Complex,9>& arr{*this->data};
+inline Complex SquareComplexMatrix<3>::determinant() const {
+    const array<Complex,9>& arr{(*(this->data.get()))};
     return arr[0]*arr[4]*arr[8] + arr[2]*arr[3]*arr[7] + arr[1]*arr[5]*arr[6] - arr[2]*arr[4]*arr[6] - arr[0]*arr[5]*arr[7] - arr[8]*arr[1]*arr[3];
 }
 template<>
-constexpr Complex SquareComplexMatrix<3>::determinantInPlace() {
+inline Complex SquareComplexMatrix<3>::determinantInPlace() {
     return determinant();
 }
 }
