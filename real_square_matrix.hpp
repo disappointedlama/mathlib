@@ -240,6 +240,36 @@ public:
         }
         return ret.transposeInPlace();
     }
+    inline SquareRealMatrix luDecomp() const{
+        SquareRealMatrix<size> m{*this};
+        array<long double, size*size>& data{*m.data};
+        SquareRealMatrix<size> p{SquareRealMatrix<size>::identity()};
+        for(int i=0;i<size;++i){
+            const size_t iOffset{i*size};
+            size_t index{(size_t)i};
+            long double value{data[i*size+i]};
+            for(int j=i+1;j<size;++j){
+                const long double abs_value{std::abs(data[j*size+i])};
+                if(abs_value!=0 && abs_value>value){
+                    index=j;
+                    value=abs_value;
+                }
+            }
+            if(index!=i){
+                m.swapRows(i,index);
+                p.swapRows(i,index);
+            }
+            for(int j=i+1;j<size;++j){
+                const size_t jOffset{j*size};
+                const long double factor{data[jOffset+i]/data[iOffset+i]};
+                data[jOffset+i]=factor;
+                for(int k=i+1;k<size;++k){
+                    data[jOffset+k]-=factor * data[iOffset+k];
+                }
+            }
+        }
+        return m;
+    }
     static SquareRealMatrix filledWith(const long double value){
         SquareRealMatrix ret{};
         std::fill(ret.data->begin(), ret.data->end(), value);

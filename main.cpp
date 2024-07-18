@@ -77,7 +77,10 @@ int main(){
     });
     std::cout<<vec<<std::endl;
     */
-    SquareRealMatrix<4>m{{1,-1,1,-1,-1,5,-5,5,1,-5,14,-14,-1,5,-14,30}};
-    std::cout<<m.cholesky()<<std::endl;
+    //SquareRealMatrix<4>m{{1,-1,1,-1,-1,5,-5,5,1,-5,14,-14,-1,5,-14,30}};
+    //std::cout<<m.cholesky()<<std::endl;
+    //SquareRealMatrix<4>m{{0,0,3,1,2,1,2,0,8,8,0,0,4,6,2,4}};
+    SquareRealMatrix<4>m{{0,2,1,-1,-2,3,0,2,0,0,0,1,2,1,1,0}};
+    std::cout<<m.luDecomp()<<std::endl;
     return 0;
 }
